@@ -1,0 +1,82 @@
+# event-spine — dev-local stack.
+# Sobe Postgres 16 (transacional + outbox + projection), Redpanda (Kafka-compat)
+# e Redpanda Console (UI de tópicos, mensagens, consumer groups).
+#
+# Uso:
+#   docker compose up -d
+#   docker compose ps
+#   # Postgres: localhost:5432, user/pass = event_spine/event_spine
+#   # Redpanda: localhost:9092 (bootstrap), localhost:9644 (admin)
+#   # Console:  http://localhost:8080
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: event-spine-postgres
+    environment:
+      POSTGRES_USER: event_spine
+      POSTGRES_PASSWORD: event_spine
+      POSTGRES_DB: event_spine
+      # Locale: força C.UTF-8, evita surpresa com timezone/collate.
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C.UTF-8 --lc-ctype=C.UTF-8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U event_spine -d event_spine"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.3.1
+    container_name: event-spine-redpanda
+    command:
+      - redpanda
+      - start
+      - --overprovisioned
+      - --smp=1
+      - --memory=512M
+      - --reserve-memory=0M
+      - --node-id=0
+      - --check=false
+      - --kafka-addr=PLAINTEXT://0.0.0.0:29092,OUTSIDE://0.0.0.0:9092
+      - --advertise-kafka-addr=PLAINTEXT://redpanda:29092,OUTSIDE://localhost:9092
+      - --pandaproxy-addr=0.0.0.0:8082
+      - --advertise-pandaproxy-addr=localhost:8082
+    ports:
+      - "9092:9092"    # Kafka broker (para apps na host)
+      - "9644:9644"    # Admin API
+      - "8082:8082"    # HTTP Proxy
+    volumes:
+      - redpanda-data:/var/lib/redpanda/data
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster health | grep -E 'Healthy:.+true'"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  console:
+    image: docker.redpanda.com/redpandadata/console:v2.8.1
+    container_name: event-spine-console
+    entrypoint: /bin/sh
+    command: -c "echo \"$$CONSOLE_CONFIG_FILE\" > /tmp/config.yml; /app/console"
+    environment:
+      CONFIG_FILEPATH: /tmp/config.yml
+      CONSOLE_CONFIG_FILE: |
+        kafka:
+          brokers: ["redpanda:29092"]
+        redpanda:
+          adminApi:
+            enabled: true
+            urls: ["http://redpanda:9644"]
+    ports:
+      - "8080:8080"
+    depends_on:
+      redpanda:
+        condition: service_healthy
+
+volumes:
+  postgres-data:
+  redpanda-data:

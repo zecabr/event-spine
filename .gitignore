@@ -1,0 +1,36 @@
+# Build results
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# NuGet
+*.nupkg
+*.snupkg
+
+# Test results
+TestResults/
+[Cc]overage*/
+*.trx
+
+# Logs
+*.log
+
+# Docker volumes (montados no compose)
+data/postgres/
+data/redpanda/
+
+# Local secrets — nunca commitar
+.env
+appsettings.*.local.json
