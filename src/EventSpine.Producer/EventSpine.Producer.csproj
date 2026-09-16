@@ -18,4 +18,8 @@
     <ProjectReference Include="..\EventSpine.Contracts\EventSpine.Contracts.csproj" />
     <ProjectReference Include="..\EventSpine.Shared\EventSpine.Shared.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="EventSpine.Producer.Tests" />
+    <InternalsVisibleTo Include="EventSpine.Integration.Tests" />
+  </ItemGroup>
 </Project>
