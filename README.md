@@ -58,7 +58,7 @@ Redpanda Console em `http://localhost:8080` pra inspecionar tópicos e mensagens
 Blocos escopados, um deliverable observável cada. Ordem sujeita a ajuste.
 
 - ✅ **Bloco 1** — Fundação: solution, docker-compose, arquitetura, ADR-001, CI.
-- 🟡 **Bloco 2** — Outbox transacional: Producer API + relay funcional + Testcontainers end-to-end.
+- ✅ **Bloco 2** — Outbox transacional: Producer API + relay funcional + Testcontainers end-to-end.
 - 🟡 **Bloco 3** — Consumer idempotente + projeção materializada + Testcontainers.
 - 🟡 **Bloco 4** — DLQ (topic + tabela + dashboard) + política de retry (ADR-003).
 - 🟡 **Bloco 5** — Schema registry + testes de contrato (ADR-002 formalizada).
@@ -71,7 +71,7 @@ Blocos escopados, um deliverable observável cada. Ordem sujeita a ajuste.
 
 ## Status
 
-Em desenvolvimento (Bloco 1 concluído). Repo público desde o primeiro commit — construção em aberto. Contribuições e feedback via issues bem-vindos.
+Em desenvolvimento (Blocos 1 e 2 concluídos). Repo público desde o primeiro commit — construção em aberto. Contribuições e feedback via issues bem-vindos.
 
 ## Autor
 
