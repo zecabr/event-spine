@@ -61,7 +61,7 @@ Blocos escopados, um deliverable observável cada. Ordem sujeita a ajuste.
 - ✅ **Bloco 2** — Outbox transacional: Producer API + relay funcional + Testcontainers end-to-end.
 - ✅ **Bloco 3** — Consumer idempotente + projeção materializada + Testcontainers.
 - ✅ **Bloco 4** — DLQ (topic + tabela + dashboard) + política de retry (ADR-003).
-- 🟡 **Bloco 5** — Schema registry + testes de contrato (ADR-002 formalizada).
+- ✅ **Bloco 5** — Schema registry + testes de contrato (ADR-002 formalizada).
 - 🟡 **Bloco 6** — Chaos test (`docker kill` do consumer) + runbook operacional.
 - 🟡 **Bloco 7** — Release v0.1 pública.
 
@@ -71,7 +71,7 @@ Blocos escopados, um deliverable observável cada. Ordem sujeita a ajuste.
 
 ## Status
 
-Em desenvolvimento (Blocos 1, 2, 3 e 4 concluídos). Repo público desde o primeiro commit — construção em aberto. Contribuições e feedback via issues bem-vindos.
+Em desenvolvimento (Blocos 1, 2, 3, 4 e 5 concluídos). Repo público desde o primeiro commit — construção em aberto. Contribuições e feedback via issues bem-vindos.
 
 ## Autor
 
