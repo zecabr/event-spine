@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://event-spine.dev/schemas/order-paid.json",
+  "title": "OrderPaid",
+  "description": "Emitted when an order transitions from Created to Paid.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["OrderId", "Amount", "PaidAt"],
+  "properties": {
+    "OrderId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "Amount": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Amount actually paid; must match the original order amount at this stage of v0.1."
+    },
+    "PaidAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

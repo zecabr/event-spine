@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://event-spine.dev/schemas/order-created.json",
+  "title": "OrderCreated",
+  "description": "Emitted when a new order is created in the Producer service.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["OrderId", "Amount", "CreatedAt"],
+  "properties": {
+    "OrderId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Aggregate id of the order."
+    },
+    "Amount": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Order total, always positive."
+    },
+    "CreatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "UTC timestamp of when the order was created."
+    }
+  }
+}

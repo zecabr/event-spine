@@ -3,6 +3,7 @@ using EventSpine.Consumer.Dlq;
 using EventSpine.Consumer.Options;
 using EventSpine.Consumer.Projection;
 using EventSpine.Contracts.Events;
+using EventSpine.Contracts.Validation;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
 
@@ -12,11 +13,13 @@ namespace EventSpine.Consumer.Kafka;
 /// Long-running worker that subscribes to the orders.events topic and applies
 /// each envelope to the projection through <see cref="OrderProjectionService"/>.
 ///
-/// Failure policy (Bloco 4):
+/// Failure policy:
 ///   - JSON deserialization fails → "poison": dead-letter immediately + commit.
+///   - Schema validation fails → "schema_violation": dead-letter + commit (no retry —
+///     the payload will not become valid by retrying).
 ///   - Projection throws → retry inline up to RetryOptions.MaxAttempts with
-///     exponential backoff (BackoffBaseMs, 2x, 4x, ...); on the final failure,
-///     dead-letter with reason="projection_failure" + commit.
+///     exponential backoff; on the final failure, dead-letter with
+///     reason="projection_failure" + commit.
 ///   - Success: commit and move to the next message.
 ///
 /// Combined with the inbox-based idempotency inside the projection, this gives
@@ -28,17 +31,20 @@ public sealed class OrderEventsConsumer : BackgroundService
     private readonly KafkaConsumerOptions _kafkaOptions;
     private readonly RetryOptions _retryOptions;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly SchemaValidator _schemaValidator;
     private readonly ILogger<OrderEventsConsumer> _logger;
 
     public OrderEventsConsumer(
         IOptions<KafkaConsumerOptions> kafkaOptions,
         IOptions<RetryOptions> retryOptions,
         IServiceScopeFactory scopeFactory,
+        SchemaValidator schemaValidator,
         ILogger<OrderEventsConsumer> logger)
     {
         _kafkaOptions = kafkaOptions.Value;
         _retryOptions = retryOptions.Value;
         _scopeFactory = scopeFactory;
+        _schemaValidator = schemaValidator;
         _logger = logger;
     }
 
@@ -79,10 +85,6 @@ public sealed class OrderEventsConsumer : BackgroundService
         }
     }
 
-    /// <summary>
-    /// Consumes at most one message, applies it (with retry + DLQ fallback),
-    /// and commits the offset. Internal so tests can drive the loop deterministically.
-    /// </summary>
     internal async Task ProcessOnceAsync(IConsumer<string, string> consumer, CancellationToken ct)
     {
         ConsumeResult<string, string>? result;
@@ -124,7 +126,20 @@ public sealed class OrderEventsConsumer : BackgroundService
             return;
         }
 
-        // 2. Retry loop with exponential backoff.
+        // 2. Schema validation — no retry, schema violations are permanent.
+        var schemaResult = _schemaValidator.Validate(envelope.EventType, envelope.Payload);
+        if (!schemaResult.IsValid)
+        {
+            _logger.LogError(
+                "Schema violation for event {EventId} of type {EventType}: {Errors}",
+                envelope.EventId, envelope.EventType, schemaResult.ErrorSummary);
+            await DeadLetterAsync(envelope, rawPayload, reason: "schema_violation",
+                errorMessage: schemaResult.ErrorSummary, attempts: 0, ct);
+            CommitSafely(consumer, result);
+            return;
+        }
+
+        // 3. Retry loop with exponential backoff.
         Exception? lastError = null;
         for (var attempt = 1; attempt <= _retryOptions.MaxAttempts; attempt++)
         {
@@ -152,7 +167,7 @@ public sealed class OrderEventsConsumer : BackgroundService
             }
         }
 
-        // 3. Retries exhausted → DLQ + commit (so the message is not redelivered).
+        // 4. Retries exhausted → DLQ + commit.
         _logger.LogError(lastError,
             "Event {EventId} failed all {Max} attempts — sending to DLQ.",
             envelope.EventId, _retryOptions.MaxAttempts);
@@ -180,9 +195,6 @@ public sealed class OrderEventsConsumer : BackgroundService
         }
         catch (Exception ex)
         {
-            // Last-resort log. If DLQ persistence itself fails, we still commit
-            // the offset — otherwise the poison would block the whole partition.
-            // Operators should see this in logs / alerts.
             _logger.LogCritical(ex,
                 "DLQ write FAILED for reason={Reason}. Offset will still be committed to unblock the partition. " +
                 "Manual recovery required.",

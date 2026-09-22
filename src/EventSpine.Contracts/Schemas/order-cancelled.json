@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://event-spine.dev/schemas/order-cancelled.json",
+  "title": "OrderCancelled",
+  "description": "Emitted when an order is cancelled before shipping.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["OrderId", "Reason", "CancelledAt"],
+  "properties": {
+    "OrderId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "Reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "Free-text reason for cancellation."
+    },
+    "CancelledAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

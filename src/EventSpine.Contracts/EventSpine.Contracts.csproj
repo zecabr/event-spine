@@ -1,5 +1,22 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <RootNamespace>EventSpine.Contracts</RootNamespace>
+    <TargetFramework>net9.0</TargetFramework>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="JsonSchema.Net" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Schemas compiled into the assembly so producer and consumer resolve
+         them without any file I/O or external registry. -->
+    <EmbeddedResource Include="Schemas\*.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="EventSpine.Contracts.Tests" />
+    <InternalsVisibleTo Include="EventSpine.Integration.Tests" />
+  </ItemGroup>
+
 </Project>

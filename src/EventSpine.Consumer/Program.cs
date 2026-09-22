@@ -4,6 +4,7 @@ using EventSpine.Consumer.Endpoints;
 using EventSpine.Consumer.Kafka;
 using EventSpine.Consumer.Options;
 using EventSpine.Consumer.Projection;
+using EventSpine.Contracts.Validation;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,6 +25,9 @@ builder.Services.Configure<RetryOptions>(
 
 // --- Kafka producer (singleton — long-lived, thread-safe) ----------------
 builder.Services.AddSingleton<IKafkaTopicProducer, KafkaTopicProducer>();
+
+// --- Schema validator (singleton — schemas parsed once from embedded resources)
+builder.Services.AddSingleton<SchemaValidator>();
 
 // --- Projection + consumer + DLQ ----------------------------------------
 builder.Services.AddScoped<OrderProjectionService>();
@@ -46,5 +50,4 @@ app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
 app.Run();
 
-// Marker for WebApplicationFactory<Program> in tests
 public partial class Program;

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://event-spine.dev/schemas/order-shipped.json",
+  "title": "OrderShipped",
+  "description": "Emitted when an order is dispatched to the customer.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["OrderId", "TrackingCode", "ShippedAt"],
+  "properties": {
+    "OrderId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "TrackingCode": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "Carrier tracking code."
+    },
+    "ShippedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}
