@@ -36,7 +36,7 @@ Ver [`docs/architecture.md`](docs/architecture.md) — C4 nível 1 (contexto) + 
 
 - ✅ [ADR-001 — Outbox transacional vs. dual write](docs/adr/001-outbox-vs-dual-write.md).
 - 🟡 ADR-002 — Escolha do broker (Redpanda vs. Kafka vs. RabbitMQ) *(antes do release v0.1)*.
-- 🟡 ADR-003 — Política de retry e critério de envio pra DLQ *(antes do release v0.1)*.
+- ✅ [ADR-003 — Política de retry e critério de envio pra DLQ](docs/adr/003-retry-and-dlq-policy.md).
 
 ## Quick start
 
@@ -60,7 +60,7 @@ Blocos escopados, um deliverable observável cada. Ordem sujeita a ajuste.
 - ✅ **Bloco 1** — Fundação: solution, docker-compose, arquitetura, ADR-001, CI.
 - ✅ **Bloco 2** — Outbox transacional: Producer API + relay funcional + Testcontainers end-to-end.
 - ✅ **Bloco 3** — Consumer idempotente + projeção materializada + Testcontainers.
-- 🟡 **Bloco 4** — DLQ (topic + tabela + dashboard) + política de retry (ADR-003).
+- ✅ **Bloco 4** — DLQ (topic + tabela + dashboard) + política de retry (ADR-003).
 - 🟡 **Bloco 5** — Schema registry + testes de contrato (ADR-002 formalizada).
 - 🟡 **Bloco 6** — Chaos test (`docker kill` do consumer) + runbook operacional.
 - 🟡 **Bloco 7** — Release v0.1 pública.
@@ -71,7 +71,7 @@ Blocos escopados, um deliverable observável cada. Ordem sujeita a ajuste.
 
 ## Status
 
-Em desenvolvimento (Blocos 1, 2 e 3 concluídos). Repo público desde o primeiro commit — construção em aberto. Contribuições e feedback via issues bem-vindos.
+Em desenvolvimento (Blocos 1, 2, 3 e 4 concluídos). Repo público desde o primeiro commit — construção em aberto. Contribuições e feedback via issues bem-vindos.
 
 ## Autor
 
