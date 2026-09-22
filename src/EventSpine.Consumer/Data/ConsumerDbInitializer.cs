@@ -27,6 +27,24 @@ public static class ConsumerDbInitializer
                 updated_at TIMESTAMP     NOT NULL,
                 version    BIGINT        NOT NULL DEFAULT 0
             );
+
+            CREATE TABLE IF NOT EXISTS dlq_events (
+                id              UUID PRIMARY KEY,
+                event_id        UUID NOT NULL,
+                event_type      VARCHAR(64),
+                aggregate_id    UUID,
+                payload         TEXT NOT NULL,
+                reason          VARCHAR(64) NOT NULL,
+                error_message   TEXT,
+                attempts        INT NOT NULL,
+                first_failed_at TIMESTAMP NOT NULL DEFAULT NOW(),
+                last_failed_at  TIMESTAMP NOT NULL DEFAULT NOW(),
+                replayed_at     TIMESTAMP,
+                replayed_count  INT NOT NULL DEFAULT 0
+            );
+
+            CREATE UNIQUE INDEX IF NOT EXISTS ix_dlq_events_event_id ON dlq_events(event_id);
+            CREATE INDEX IF NOT EXISTS ix_dlq_events_reason ON dlq_events(reason) WHERE replayed_at IS NULL;
             """,
             ct);
     }

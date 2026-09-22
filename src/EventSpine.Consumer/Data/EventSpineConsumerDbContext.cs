@@ -11,6 +11,7 @@ public sealed class EventSpineConsumerDbContext : DbContext
 
     public DbSet<ConsumerInboxEntry> ConsumerInbox => Set<ConsumerInboxEntry>();
     public DbSet<OrderView> OrdersView => Set<OrderView>();
+    public DbSet<DlqEvent> DlqEvents => Set<DlqEvent>();
 
     protected override void OnModelCreating(ModelBuilder mb)
     {
@@ -32,6 +33,25 @@ public sealed class EventSpineConsumerDbContext : DbContext
             e.Property(x => x.CreatedAt).HasColumnName("created_at");
             e.Property(x => x.UpdatedAt).HasColumnName("updated_at");
             e.Property(x => x.Version).HasColumnName("version");
+        });
+
+        mb.Entity<DlqEvent>(e =>
+        {
+            e.ToTable("dlq_events");
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => x.EventId).IsUnique();
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.EventId).HasColumnName("event_id");
+            e.Property(x => x.EventType).HasColumnName("event_type").HasMaxLength(64);
+            e.Property(x => x.AggregateId).HasColumnName("aggregate_id");
+            e.Property(x => x.Payload).HasColumnName("payload").IsRequired();
+            e.Property(x => x.Reason).HasColumnName("reason").HasMaxLength(64).IsRequired();
+            e.Property(x => x.ErrorMessage).HasColumnName("error_message");
+            e.Property(x => x.Attempts).HasColumnName("attempts");
+            e.Property(x => x.FirstFailedAt).HasColumnName("first_failed_at");
+            e.Property(x => x.LastFailedAt).HasColumnName("last_failed_at");
+            e.Property(x => x.ReplayedAt).HasColumnName("replayed_at");
+            e.Property(x => x.ReplayedCount).HasColumnName("replayed_count");
         });
     }
 }

@@ -1,4 +1,5 @@
 using EventSpine.Consumer.Data;
+using EventSpine.Consumer.Dlq;
 using EventSpine.Consumer.Endpoints;
 using EventSpine.Consumer.Kafka;
 using EventSpine.Consumer.Options;
@@ -18,9 +19,15 @@ builder.Services.AddDbContext<EventSpineConsumerDbContext>((sp, options) =>
 // --- Options ------------------------------------------------------------
 builder.Services.Configure<KafkaConsumerOptions>(
     builder.Configuration.GetSection("KafkaConsumer"));
+builder.Services.Configure<RetryOptions>(
+    builder.Configuration.GetSection("Retry"));
 
-// --- Projection + consumer ---------------------------------------------
+// --- Kafka producer (singleton — long-lived, thread-safe) ----------------
+builder.Services.AddSingleton<IKafkaTopicProducer, KafkaTopicProducer>();
+
+// --- Projection + consumer + DLQ ----------------------------------------
 builder.Services.AddScoped<OrderProjectionService>();
+builder.Services.AddScoped<DlqService>();
 builder.Services.AddHostedService<OrderEventsConsumer>();
 
 var app = builder.Build();
@@ -32,8 +39,9 @@ using (var scope = app.Services.CreateScope())
     await ConsumerDbInitializer.InitializeAsync(db);
 }
 
-// --- HTTP read-side -----------------------------------------------------
+// --- HTTP read-side + DLQ ops -------------------------------------------
 app.MapOrdersViewEndpoints();
+app.MapDlqEndpoints();
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
 app.Run();
